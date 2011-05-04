@@ -19,8 +19,12 @@ module Compass
             else
               x = image.left - (image.left / image.width).ceil * image.width
               while x < width do
-                output_png.replace! input_png, x, image.top
-                x += image.width
+                begin
+                  output_png.replace! input_png, x, image.top
+                  x += image.width 
+                rescue ChunkyPNG::OutOfBounds
+                  break;
+                end
               end
             end
           end

@@ -3,7 +3,7 @@ $:.unshift(File.expand_path(File.join(File.dirname(__FILE__), '../../test')))
 require 'test_helper'
 
 require 'compass/exec'
-
+include Compass::TestCaseHelper
 include Compass::CommandLineHelper
 include Compass::IoHelper
 include Compass::RailsHelper
@@ -18,6 +18,12 @@ After do
   Dir.chdir @original_working_directory
   @cleanup_directories.each do |dir|
     FileUtils.rm_rf dir
+  end
+end
+
+Given "ruby supports fork" do
+  if RUBY_PLATFORM == "java"
+    pending
   end
 end
 

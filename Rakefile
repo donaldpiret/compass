@@ -13,7 +13,7 @@ require 'cucumber'
 require 'cucumber/rake/task'
 
 Cucumber::Rake::Task.new(:features) do |t|
-  t.cucumber_opts = "features --format pretty"
+  t.cucumber_opts = "features --format progress"
 end
 
 Rake::TestTask.new :test do |t|
@@ -28,20 +28,6 @@ Rake::Task[:test].send(:add_comment, <<END)
 To run with an alternate version of Rails, make test/rails a symlink to that version.
 To run with an alternate version of Haml & Sass, make test/haml a symlink to that version.
 END
-
-begin
-  require 'rspec/core/rake_task'
-
-  RSpec::Core::RakeTask.new(:spec)
-
-  RSpec::Core::RakeTask.new(:rcov) do |spec|
-    spec.rcov = true
-  end
-
-  task :default => :spec
-rescue LoadError
-  puts "Rspec (or a dependency) is not available. Try running bundler install"
-end
 
 desc "Compile Examples into HTML and CSS"
 task :examples do

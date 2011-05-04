@@ -5,7 +5,6 @@ require 'compass/exec'
 require 'timeout'
 
 class RailsIntegrationTest < Test::Unit::TestCase
-  include Compass::TestCaseHelper
   include Compass::CommandLineHelper
   include Compass::IoHelper
   include Compass::RailsHelper
@@ -33,6 +32,8 @@ class RailsIntegrationTest < Test::Unit::TestCase
     end
   rescue LoadError
     puts "Skipping rails test. Couldn't Load rails"
+  rescue NotImplementedError => e
+    puts "Skipping rails test: #{e}"
   end
 
   def test_rails_install_with_no_dialog

@@ -7,12 +7,11 @@ module Compass
 
     def initialize(working_path, from, to, options)
       self.working_path = working_path
-      self.from, self.to = from, to
+      self.from, self.to = from.gsub('./', ''), to
       self.logger = options.delete(:logger)
       self.options = options
       self.options[:cache_location] ||= determine_cache_location
-      Compass.configure_sass_plugin!
-      self.importer = Sass::Importers::Filesystem.new(from)
+      options[:importer] = self.importer = Sass::Importers::Filesystem.new(from)
       self.staleness_checker = Sass::Plugin::StalenessChecker.new(options)
     end
 
@@ -26,11 +25,15 @@ module Compass
     end
 
     def relative_stylesheet_name(sass_file)
-      sass_file[("#{from}/".length)..-1]
+      sass_file[(from.length + 1)..-1]
     end
 
     def stylesheet_name(sass_file)
-      sass_file[("#{from}/".length)..-6]
+      if sass_file.index(from) == 0
+        sass_file[(from.length + 1)..-6]
+      else
+        raise Compass::Error, "You must compile individual stylesheets from the project directory."
+      end
     end
 
     def css_files
@@ -54,7 +57,7 @@ module Compass
     end
 
     def needs_update?(css_filename, sass_filename)
-      staleness_checker.stylesheet_needs_update?(css_filename, relative_stylesheet_name(sass_filename), importer)
+      staleness_checker.stylesheet_needs_update?(css_filename, File.expand_path(sass_filename), importer)
     end
 
     # Determines if the configuration file is newer than any css file
@@ -102,7 +105,7 @@ module Compass
 
     def compile_if_required(sass_filename, css_filename)
       if should_compile?(sass_filename, css_filename)
-        compile sass_filename, css_filename, :time => options[:time]
+        compile sass_filename, css_filename
       else
         logger.record :unchanged, basename(sass_filename) unless options[:quiet]
       end
@@ -120,14 +123,14 @@ module Compass
     end
 
     # Compile one Sass file
-    def compile(sass_filename, css_filename, additional_options = {})
+    def compile(sass_filename, css_filename)
       start_time = end_time = nil
       css_content = logger.red do
         timed do
           engine(sass_filename, css_filename).render
         end
       end
-      duration = additional_options[:time] ? "(#{(css_content.__duration * 1000).round / 1000.0}s)" : ""
+      duration = options[:time] ? "(#{(css_content.__duration * 1000).round / 1000.0}s)" : ""
       write_file(css_filename, css_content, options.merge(:force => true, :extra => duration))
       Compass.configuration.run_callback(:stylesheet_saved, css_filename)
     end

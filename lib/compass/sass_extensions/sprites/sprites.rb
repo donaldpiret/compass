@@ -9,7 +9,7 @@ module Compass
     end
 
     def self.discover_sprites(uri)
-      self.load_map(uri, options).files
+      self.load_map(uri, {}).files
     end
 
     def self.sprite_name(file)
@@ -49,5 +49,14 @@ module Compass
     def to_s
       ""
     end
+
+    def hash
+      self.class.name.hash
+    end
+
+    def eql?(other)
+      other.class == self.class
+    end
+
   end
 end
